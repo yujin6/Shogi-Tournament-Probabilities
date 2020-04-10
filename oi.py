@@ -32,6 +32,12 @@ def left(digit, msg):
         digit -= 2 if unicodedata.east_asian_width(c) in ('F', 'W', 'A') else 1
     return(msg + ' '*digit)
 
+def adjust(player, comb, odds, p, match, result):
+    if result == 'W':
+        odds[match] = 1 if p[match] else 0
+    else:
+        odds[match] = 0 if p[match] else 1
+
 def calculate(player, elo, color):
     solo = [0, 0, 0, 0, 0, 0]
     duo = [0, 0, 0, 0, 0, 0]
@@ -55,9 +61,31 @@ def calculate(player, elo, color):
             odds.append(odd(comb[i], elo)) if p[i] else odds.append(1 - odd(comb[i], elo))
             winners.append(comb[i][0]) if p[i] else winners.append(comb[i][1])
         # adjust with actual results
-        #白組
-        odds[10] = 1 if p[10] else 0 # 稲葉陽     八段 〇 - ● 阿部健治郎 七段
-        odds[4] = 0 if p[4] else 1   # 羽生善治   九段 ● - 〇 藤井聡太   七段
+        if color == "紅組":
+            adjust(player, comb, odds, p, 0, 'L')  # 豊島将之   二冠 ● - 〇 永瀬拓矢   二冠
+            adjust(player, comb, odds, p, 2, 'W')  # 豊島将之   二冠 〇 - ● 鈴木大介   九段
+            adjust(player, comb, odds, p, 3, 'W')  # 豊島将之   二冠 〇 - ● 佐藤秀司   七段
+            adjust(player, comb, odds, p, 4, 'W')  # 豊島将之   二冠 〇 - ● 本田奎     五段
+            adjust(player, comb, odds, p, 5, 'W')  # 永瀬拓矢   二冠 〇 - ● 佐々木大地 五段
+            adjust(player, comb, odds, p, 6, 'W')  # 永瀬拓矢   二冠 〇 - ● 鈴木大介   九段
+            adjust(player, comb, odds, p, 7, 'W')  # 永瀬拓矢   二冠 〇 - ● 佐藤秀司   七段
+            adjust(player, comb, odds, p, 9, 'W')  # 佐々木大地 五段 〇 - ● 鈴木大介   九段
+            adjust(player, comb, odds, p, 10, 'W') # 佐々木大地 五段 〇 - ● 佐藤秀司   七段
+            adjust(player, comb, odds, p, 13, 'W') # 鈴木大介   九段 〇 - ● 本田奎     五段
+            adjust(player, comb, odds, p, 14, 'L') # 佐藤秀司   七段 ● - 〇 本田奎     五段
+        if color == "白組":
+            adjust(player, comb, odds, p, 1, 'W')  # 羽生善治   九段 〇 - ● 稲葉陽     八段
+            adjust(player, comb, odds, p, 2, 'W')  # 羽生善治   九段 〇 - ● 上村亘     五段
+            adjust(player, comb, odds, p, 3, 'W')  # 羽生善治   九段 〇 - ● 阿部健治郎 七段
+            adjust(player, comb, odds, p, 4, 'L')  # 羽生善治   九段 ● - 〇 藤井聡太   七段
+            adjust(player, comb, odds, p, 5, 'W')  # 菅井竜也   七段 〇 - ● 稲葉陽     八段
+            adjust(player, comb, odds, p, 6, 'W')  # 菅井竜也   七段 〇 - ● 上村亘     五段
+            adjust(player, comb, odds, p, 7, 'W')  # 菅井竜也   七段 〇 - ● 阿部健治郎 七段
+            adjust(player, comb, odds, p, 8, 'L')  # 菅井竜也   七段 ● - 〇 藤井聡太   七段
+            adjust(player, comb, odds, p, 10, 'W') # 稲葉陽     八段 〇 - ● 阿部健治郎 七段
+            adjust(player, comb, odds, p, 11, 'L') # 稲葉陽     八段 ● - 〇 藤井聡太   七段
+            adjust(player, comb, odds, p, 12, 'W') # 上村亘     五段 〇 - ● 阿部健治郎 七段
+            adjust(player, comb, odds, p, 13, 'L') # 上村亘     五段 ● - 〇 藤井聡太   七段
         odds = matched(odds, p, color)
         prob = numpy.prod(odds)
         winners = champion(winners)
@@ -81,13 +109,19 @@ def calculate(player, elo, color):
 def main():
     color = "紅組"
     player = ["豊島将之   二冠", "永瀬拓矢   二冠", "佐々木大地 五段", "鈴木大介   九段", "佐藤秀司   七段", "本田奎     五段"]
-    elo = [1919, 1912, 1825, 1663, 1555, 1704]
-    elo = [1916, 1925, 1809, 1661, 1560, 1691]
+    elo = [1919, 1912, 1825, 1663, 1555, 1704] # 1/16
+    elo = [1916, 1925, 1809, 1661, 1560, 1691] # 2/18
+    elo = [1928, 1910, 1799, 1658, 1550, 1694] # 2/29
+    elo = [1916, 1920, 1780, 1660, 1536, 1689] # 3/24
+    elo = [1916, 1925, 1780, 1638, 1543, 1680] # 4/10
     calculate(player, elo, color)
     color = "白組"
     player = ["羽生善治   九段", "菅井竜也   七段", "稲葉陽     八段", "上村亘     五段", "阿部健治郎 七段", "藤井聡太   七段"]
-    elo = [1819, 1833, 1751, 1526, 1669, 1903]
-    elo = [1833, 1846, 1774, 1533, 1667, 1915]
+    elo = [1819, 1833, 1751, 1526, 1669, 1903] # 1/16
+    elo = [1833, 1846, 1774, 1533, 1667, 1915] # 2/18
+    elo = [1817, 1839, 1780, 1531, 1667, 1926] # 2/29
+    elo = [1830, 1841, 1757, 1544, 1660, 1925] # 3/24
+    elo = [1842, 1836, 1745, 1556, 1640, 1944] # 4/10
     calculate(player, elo, color)
 
 if __name__ == '__main__':
