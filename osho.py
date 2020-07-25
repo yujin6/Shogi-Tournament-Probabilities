@@ -57,6 +57,7 @@ def calculate(player, elo):
         for i in range(num_m):
             odds.append(odd(comb[i], elo)) if p[i] else odds.append(1 - odd(comb[i], elo))
             winners.append(comb[i][0]) if p[i] else winners.append(comb[i][1])
+        # adjust with actual results
         odds = matched(odds, p)
         prob = numpy.prod(odds)
         winners = champion(winners)
