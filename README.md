@@ -15,3 +15,6 @@ Calculates probabilities of professional shogi tournaments.
 
 # Ginga tournaments (銀河戦)
 11 players, 10 matches, 1024 patterns.
+
+# Osho league (王将戦)
+7 players, 21 matches, 2,097,152 patterns.
