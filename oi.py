@@ -32,25 +32,31 @@ def left(digit, msg):
         digit -= 2 if unicodedata.east_asian_width(c) in ('F', 'W', 'A') else 1
     return(msg + ' '*digit)
 
-def adjust(player, comb, odds, p, match, result):
-    if result == 'W':
-        odds[match] = 1 if p[match] else 0
+def adjust(player, comb, odds, p, result):
+    if result[1] == 'W':
+        odds[result[0]] = 1 if p[result[0]] else 0
     else:
-        odds[match] = 0 if p[match] else 1
+        odds[result[0]] = 0 if p[result[0]] else 1
 
-def calculate(player, elo, color):
-    solo = [0, 0, 0, 0, 0, 0]
-    duo = [0, 0, 0, 0, 0, 0]
-    trio = [0, 0, 0, 0, 0, 0]
-    quad = [0, 0, 0, 0, 0, 0]
-    quin = [0, 0, 0, 0, 0, 0]
-    sex = [0, 0, 0, 0, 0, 0]
-    tie = [0, 0, 0, 0, 0, 0]
-    playoff = [0, 0, 0, 0, 0, 0]
+def calculate(player, elo, actual, color):
+    solo = []
+    tie = []
+    playoff = []
     num_p = len(elo) # number of players
+    print(color + " 棋士一覧: ")
+    for i in range(num_p):
+        print (str(i) + " " + player[i])
+        solo.append([])
+        for j in range(num_p):
+            solo[i].append(0)
+        tie.append(0)
+        playoff.append(0)
     num_m = (num_p * (num_p - 1)) // 2 # number of matches
     comb = list(combinations(list(range(num_p)), 2)) # combination of matches
-    print(comb)
+    # print(comb)
+    print(color + " 実際の対局結果： ")
+    for result in actual:
+        print(player[comb[result[0]][0]] + (" 〇 - ● " if result[1] == 'W' else " ● - 〇 ") + player[comb[result[0]][1]])
     for patterns in range(pow(2, num_m)):
         p = [] # pattens of wins and loses in each match
         for match in range(num_m): p.append((patterns // pow(2, match)) % 2)
@@ -60,51 +66,26 @@ def calculate(player, elo, color):
         for i in range(num_m):
             odds.append(odd(comb[i], elo)) if p[i] else odds.append(1 - odd(comb[i], elo))
             winners.append(comb[i][0]) if p[i] else winners.append(comb[i][1])
-        # adjust with actual results
-        if color == "紅組":
-            adjust(player, comb, odds, p, 0, 'L')  # 豊島将之   二冠 ● - 〇 永瀬拓矢   二冠
-            adjust(player, comb, odds, p, 2, 'W')  # 豊島将之   二冠 〇 - ● 鈴木大介   九段
-            adjust(player, comb, odds, p, 3, 'W')  # 豊島将之   二冠 〇 - ● 佐藤秀司   七段
-            adjust(player, comb, odds, p, 4, 'W')  # 豊島将之   二冠 〇 - ● 本田奎     五段
-            adjust(player, comb, odds, p, 5, 'W')  # 永瀬拓矢   二冠 〇 - ● 佐々木大地 五段
-            adjust(player, comb, odds, p, 6, 'W')  # 永瀬拓矢   二冠 〇 - ● 鈴木大介   九段
-            adjust(player, comb, odds, p, 7, 'W')  # 永瀬拓矢   二冠 〇 - ● 佐藤秀司   七段
-            adjust(player, comb, odds, p, 9, 'W')  # 佐々木大地 五段 〇 - ● 鈴木大介   九段
-            adjust(player, comb, odds, p, 10, 'W') # 佐々木大地 五段 〇 - ● 佐藤秀司   七段
-            adjust(player, comb, odds, p, 13, 'W') # 鈴木大介   九段 〇 - ● 本田奎     五段
-            adjust(player, comb, odds, p, 14, 'L') # 佐藤秀司   七段 ● - 〇 本田奎     五段
-        if color == "白組":
-            adjust(player, comb, odds, p, 1, 'W')  # 羽生善治   九段 〇 - ● 稲葉陽     八段
-            adjust(player, comb, odds, p, 2, 'W')  # 羽生善治   九段 〇 - ● 上村亘     五段
-            adjust(player, comb, odds, p, 3, 'W')  # 羽生善治   九段 〇 - ● 阿部健治郎 七段
-            adjust(player, comb, odds, p, 4, 'L')  # 羽生善治   九段 ● - 〇 藤井聡太   七段
-            adjust(player, comb, odds, p, 5, 'W')  # 菅井竜也   七段 〇 - ● 稲葉陽     八段
-            adjust(player, comb, odds, p, 6, 'W')  # 菅井竜也   七段 〇 - ● 上村亘     五段
-            adjust(player, comb, odds, p, 7, 'W')  # 菅井竜也   七段 〇 - ● 阿部健治郎 七段
-            adjust(player, comb, odds, p, 8, 'L')  # 菅井竜也   七段 ● - 〇 藤井聡太   七段
-            adjust(player, comb, odds, p, 10, 'W') # 稲葉陽     八段 〇 - ● 阿部健治郎 七段
-            adjust(player, comb, odds, p, 11, 'L') # 稲葉陽     八段 ● - 〇 藤井聡太   七段
-            adjust(player, comb, odds, p, 12, 'W') # 上村亘     五段 〇 - ● 阿部健治郎 七段
-            adjust(player, comb, odds, p, 13, 'L') # 上村亘     五段 ● - 〇 藤井聡太   七段
+        for result in actual: # adjust with actual results
+            adjust(player, comb, odds, p, result)
         odds = matched(odds, p, color)
         prob = numpy.prod(odds)
         winners = champion(winners)
         for i in range(num_p):
             if i in winners:
                 tie[i] += prob
-                if len(winners) == 1: solo[i] += prob
-                if len(winners) == 2: duo[i] += prob
-                if len(winners) == 3: trio[i] += prob
-                if len(winners) == 4: quad[i] += prob
-                if len(winners) == 5: quin[i] += prob
-                if len(winners) == 6: sex[i] += prob
+                for j in range(num_p):
+                    if len(winners) == j + 1: solo[j][i] += prob
         playoff[len(winners) - 1] += prob
     print(color + " 1位の確率: ", end = " ")
     for i in playoff:
         print(str(i * 100), end = "% ")
-    print("a")
+    print("")
     for i in range(num_p):
-        print(left(18, player[i]) + str(solo[i] * 100) + "% " + str(duo[i] * 100) + "% "  + str(trio[i] * 100) + "% " + str(quad[i] * 100) + "% " + str(quin[i] * 100) + "% " + str(sex[i] * 100) + "% ")
+        odds_listed = ""
+        for j in range(num_p):
+            odds_listed += str(solo[j][i] * 100) + "% "
+        print(left(18, player[i]) + odds_listed)
 
 def main():
     color = "紅組"
@@ -114,7 +95,22 @@ def main():
     elo = [1928, 1910, 1799, 1658, 1550, 1694] # 2/29
     elo = [1916, 1920, 1780, 1660, 1536, 1689] # 3/24
     elo = [1916, 1925, 1780, 1638, 1543, 1680] # 4/10
-    calculate(player, elo, color)
+    elo = [1916, 1925, 1792, 1647, 1534, 1669] # 4/17
+    actual = []
+    actual.append((0, 'L'))  # 豊島将之   二冠 ● - 〇 永瀬拓矢   二冠
+    actual.append((2, 'W'))  # 豊島将之   二冠 〇 - ● 鈴木大介   九段
+    actual.append((3, 'W'))  # 豊島将之   二冠 〇 - ● 佐藤秀司   七段
+    actual.append((4, 'W'))  # 豊島将之   二冠 〇 - ● 本田奎     五段
+    actual.append((5, 'W'))  # 永瀬拓矢   二冠 〇 - ● 佐々木大地 五段
+    actual.append((6, 'W'))  # 永瀬拓矢   二冠 〇 - ● 鈴木大介   九段
+    actual.append((7, 'W'))  # 永瀬拓矢   二冠 〇 - ● 佐藤秀司   七段
+    actual.append((9, 'W'))  # 佐々木大地 五段 〇 - ● 鈴木大介   九段
+    actual.append((10, 'W')) # 佐々木大地 五段 〇 - ● 佐藤秀司   七段
+    actual.append((11, 'W')) # 佐々木大地 五段 〇 - ● 本田奎     五段
+    actual.append((13, 'W')) # 鈴木大介   九段 〇 - ● 本田奎     五段
+    actual.append((14, 'L')) # 佐藤秀司   七段 ● - 〇 本田奎     五段    
+    calculate(player, elo, actual, color)
+    print("")
     color = "白組"
     player = ["羽生善治   九段", "菅井竜也   七段", "稲葉陽     八段", "上村亘     五段", "阿部健治郎 七段", "藤井聡太   七段"]
     elo = [1819, 1833, 1751, 1526, 1669, 1903] # 1/16
@@ -122,7 +118,21 @@ def main():
     elo = [1817, 1839, 1780, 1531, 1667, 1926] # 2/29
     elo = [1830, 1841, 1757, 1544, 1660, 1925] # 3/24
     elo = [1842, 1836, 1745, 1556, 1640, 1944] # 4/10
-    calculate(player, elo, color)
+    elo = [1842, 1836, 1745, 1556, 1640, 1944] # 4/17
+    actual = []
+    actual.append((1, 'W'))  # 羽生善治   九段 〇 - ● 稲葉陽     八段
+    actual.append((2, 'W'))  # 羽生善治   九段 〇 - ● 上村亘     五段
+    actual.append((3, 'W'))  # 羽生善治   九段 〇 - ● 阿部健治郎 七段
+    actual.append((4, 'L'))  # 羽生善治   九段 ● - 〇 藤井聡太   七段
+    actual.append((5, 'W'))  # 菅井竜也   七段 〇 - ● 稲葉陽     八段
+    actual.append((6, 'W'))  # 菅井竜也   七段 〇 - ● 上村亘     五段
+    actual.append((7, 'W'))  # 菅井竜也   七段 〇 - ● 阿部健治郎 七段
+    actual.append((8, 'L'))  # 菅井竜也   七段 ● - 〇 藤井聡太   七段
+    actual.append((10, 'W')) # 稲葉陽     八段 〇 - ● 阿部健治郎 七段
+    actual.append((11, 'L')) # 稲葉陽     八段 ● - 〇 藤井聡太   七段
+    actual.append((12, 'W')) # 上村亘     五段 〇 - ● 阿部健治郎 七段
+    actual.append((13, 'L')) # 上村亘     五段 ● - 〇 藤井聡太   七段
+    calculate(player, elo, actual, color)
 
 if __name__ == '__main__':
     main()
